@@ -52,6 +52,16 @@ deliberate or low-severity:
 - `vector` / `pg_net` installed in `public` — **deferred** to scale-vision hardening:
   relocating an in-use extension type post-hoc is risky.
 
+## Internal function auth
+
+The stage functions (`semantic-router`, `skill-runner`, `validate`) are deployed
+`verify_jwt=false` because the project's injected keys are the new non-JWT format that the
+gateway's JWT check rejects. They are **gateway-internal**, protected by status-idempotency
+guards (each runs only when the task is in its expected status, else no-ops) and never return
+task data. `create-task` is the JWT-authenticated public entry. See
+[`../supabase/functions/README.md`](../supabase/functions/README.md). Hardening to a signed
+internal shared-secret header is a tracked follow-up.
+
 ## LGPD lifecycle
 
 - Sensitive columns enumerated in [`04-data-model.md`](04-data-model.md).

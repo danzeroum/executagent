@@ -1,0 +1,15 @@
+{
+  "base": "Brand visual identity exploration: a single distinctive logomark with a small supporting color palette and a type direction. Flat vector, high contrast, centered composition, neutral background.",
+  "templateHints": {
+    "identidade": "Logomark + wordmark lockup for a brand identity.",
+    "ui": "App home screen mock: balance card, quick actions, list — strong typographic hierarchy.",
+    "poster": "Editorial poster: expressive title, one accent color over black and white.",
+    "icones": "Cohesive icon set on a 24px grid, uniform stroke, line style."
+  },
+  "variationAxes": [
+    "geometric and precise",
+    "organic and humanist",
+    "minimal with generous negative space",
+    "bold and high-contrast"
+  ]
+}
