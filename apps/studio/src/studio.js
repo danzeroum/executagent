@@ -1,10 +1,19 @@
 /* ============================================================
    Executagent Studio — interactions
    ============================================================ */
+import { configured } from './lib/supabaseClient.js';
+import { ensureSession } from './lib/auth.js';
+import * as api from './lib/api.js';
+import { subscribeTaskEvents, pollTaskEvents } from './lib/realtime.js';
+
 (function () {
   'use strict';
   const $  = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // Real backend when Supabase is configured; otherwise a clearly-labeled DEMO.
+  const REAL = configured;
+  if (REAL) ensureSession();
 
   /* ---------- seeded rng ---------- */
   function mulberry32(a) {
@@ -254,11 +263,105 @@
     { name: 'Entrega', meta: '4 variações', t: 500 }
   ];
 
-  $('#generateBtn').addEventListener('click', runGenerate);
+  $('#generateBtn').addEventListener('click', () => (REAL ? runGenerateReal() : runGenerate()));
+
+  // Build the create-task payload from the composer state.
+  function buildBrief() {
+    const promptText = (prompt.value || '').trim() ||
+      (state.template ? TEMPLATES[state.template].scaffold : 'identidade visual');
+    return {
+      prompt: promptText,
+      tier: state.tier,
+      skill_slug: 'visual-identity',
+      preferences: {
+        template: state.template || 'identidade',
+        style: [...state.styles],
+        mood: [...state.moods],
+      },
+    };
+  }
+
+  // Render the process timeline once; steps are advanced by real task_events.
+  function renderRealTimeline() {
+    const labels = ['Criação da task', 'Roteamento semântico', `Geração · tier ${state.tier}`, 'Validação', 'Entrega'];
+    discoverBody.innerHTML = `<div class="process"><div class="proc-steps fade-in">${
+      labels.map((name, i) => `<div class="proc" data-step="${i}"><div class="proc__dot">${i + 1}</div><div class="proc__name">${name}</div><div class="proc__meta"></div></div>`).join('')
+    }</div></div>`;
+  }
+  function advance(stepIndex, meta) {
+    const els = $$('.proc', discoverBody);
+    els.forEach((el, i) => {
+      el.classList.toggle('done', i < stepIndex);
+      el.classList.toggle('active', i === stepIndex);
+      if (i < stepIndex) el.querySelector('.proc__dot').textContent = '✓';
+    });
+    if (meta && els[stepIndex]) els[stepIndex].querySelector('.proc__meta').textContent = meta;
+  }
+
+  async function runGenerateReal() {
+    const btn = $('#generateBtn'); btn.disabled = true;
+    $('#discoverMeta').textContent = 'gerando…';
+    renderRealTimeline();
+    let unsub = () => {};
+    const finish = async () => {
+      unsub();
+      await renderRealGallery();
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6M20 20v-6h-6M20 9A8 8 0 0 0 6 5M4 15a8 8 0 0 0 14 4"/></svg> Gerar novamente';
+    };
+    try {
+      const { task_id } = await api.createTask(buildBrief());
+      state.taskId = task_id;
+      advance(0, '#' + String(task_id).slice(0, 4));
+      const onEvent = (e) => {
+        if (e.type === 'routing_done') advance(1, 'conf. ok');
+        else if (e.type === 'generation_started') advance(2, `tier ${state.tier}`);
+        else if (e.type === 'variation_ready') advance(2, `${(e.payload?.variation_index ?? 0) + 1}/4`);
+        else if (e.type === 'validation_started' || e.type === 'validation_done') advance(3, 'plágio · PII · carbono');
+        else if (e.type === 'delivered') { advance(4, '4 variações'); finish(); }
+        else if (e.type === 'failed') { $('#discoverMeta').textContent = 'falhou'; btn.disabled = false; unsub(); }
+      };
+      unsub = subscribeTaskEvents(task_id, onEvent);
+      // Polling fallback in case a Realtime message is missed.
+      setTimeout(async () => {
+        const evs = await pollTaskEvents(task_id);
+        if (evs.some((e) => e.type === 'delivered') && !$('.variant', discoverBody)) finish();
+      }, 8000);
+    } catch (err) {
+      $('#discoverMeta').textContent = 'erro: ' + err.message;
+      btn.disabled = false;
+    }
+  }
+
+  async function renderRealGallery() {
+    const artifacts = await api.listArtifacts(state.taskId);
+    const cards = await Promise.all(artifacts.map(async (a, i) => {
+      const url = await api.signedUrl(a.storage_path);
+      const env = a.environmental_report || {};
+      const kwh = typeof env.energy_kwh === 'number' ? env.energy_kwh.toFixed(3) : '—';
+      const q = a.quality_score != null ? a.quality_score : '—';
+      return `<article class="variant" data-id="${a.id}" tabindex="0">
+        <div class="variant__art">
+          <div class="variant__badge">v${a.variation_index} · ${(a.metadata?.provider) || 'mock'}</div>
+          <div class="variant__q"><span class="qdot"></span>q${q}</div>
+          <img class="specimen" src="${url}" alt="Direção ${i}" style="width:100%;height:100%;object-fit:cover;display:block"/>
+        </div>
+        <div class="variant__foot"><span class="name">Direção ${String.fromCharCode(65 + i)}</span></div>
+        <div class="tech-meta"><dl>
+          <dt>modelo</dt><dd>${a.metadata?.model || '—'}</dd>
+          <dt>energia</dt><dd>${kwh} kWh</dd>
+          <dt>método</dt><dd>${env.method || '—'}</dd>
+          <dt>integridade</dt><dd>sha256 ✓</dd>
+        </dl></div>
+      </article>`;
+    }));
+    $('#discoverMeta').textContent = `${artifacts.length} variações · reais`;
+    discoverBody.innerHTML = `<div class="discover-head"><span class="label">Grade de variações</span></div><div class="gallery">${cards.join('')}</div>`;
+  }
 
   function runGenerate() {
     const btn = $('#generateBtn'); btn.disabled = true;
-    $('#discoverMeta').textContent = 'gerando…';
+    $('#discoverMeta').textContent = 'gerando… (DEMO)';
     const steps = PROC.map((p, i) => {
       const meta = i === 2 ? `tier ${state.tier} · 30 passos` : p.meta;
       const name = i === 2 ? `Geração · tier ${state.tier}` : p.name;

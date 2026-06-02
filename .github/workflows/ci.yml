@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Unit tests (core + providers)
+        run: pnpm -r --if-present test
+      - name: Build Studio
+        run: pnpm --filter @executagent/studio build
+
+  # DB security + e2e tests. Require a Supabase stack; kept as a separate job so
+  # the unit layer always gates merges even before secrets are configured.
+  db-tests:
+    runs-on: ubuntu-latest
+    if: ${{ false }} # enable once Supabase CLI + a test DB are wired in CI
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase start
+      - name: RLS / IDOR regression (pgTAP)
+        run: supabase test db
+      - name: End-to-end (mock provider)
+        env:
+          PROVIDER_FORCE_MOCK: "true"
+        run: node scripts/e2e.mjs
