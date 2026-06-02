@@ -1,0 +1,38 @@
+# Executagent Studio — VPS deployment behind an existing reverse proxy.
+#
+#   cp .env.docker.example .env        # fill SUPABASE_URL, SUPABASE_ANON_KEY, STUDIO_HOST
+#   docker compose up -d --build
+#
+# Frontend-only: the backend stays on the managed Supabase project. The container
+# exposes port 80 on the shared proxy network (no host ports), so it coexists with
+# your other projects. Traefik labels are included; for nginx-proxy see docs/07.
+services:
+  studio:
+    build:
+      context: .
+      dockerfile: apps/studio/Dockerfile
+    image: executagent-studio:latest
+    restart: unless-stopped
+    environment:
+      # Read at container startup and written into /config.js (anon key is public).
+      SUPABASE_URL: ${SUPABASE_URL:?set SUPABASE_URL in .env}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?set SUPABASE_ANON_KEY in .env}
+    networks:
+      - proxy
+    expose:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${PROXY_NETWORK:-proxy}"
+      - "traefik.http.routers.executagent.rule=Host(`${STUDIO_HOST:?set STUDIO_HOST in .env}`)"
+      - "traefik.http.routers.executagent.entrypoints=websecure"
+      - "traefik.http.routers.executagent.tls=true"
+      - "traefik.http.routers.executagent.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}"
+      - "traefik.http.services.executagent.loadbalancer.server.port=80"
+
+# The proxy network is created/owned by your existing Traefik stack.
+# Create it once if needed:  docker network create proxy
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-proxy}

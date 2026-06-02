@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+.git
+.github
+supabase/.branches
+supabase/.temp
+**/*.log
+.env
+.env.*
+!.env.docker.example
