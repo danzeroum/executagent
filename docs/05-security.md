@@ -39,6 +39,19 @@ marking it an estimate.
 - External-corpus plagiarism, in-image OCR PII detection, KMS-based automated key rotation,
   gateway-grade rate limiting, mTLS between services — all scale-vision.
 
+## Database linter status
+
+After migrations 0008–0010 the critical `rls_disabled` finding is resolved (RLS on every
+business table, proven by `supabase/tests/rls_idor_test.sql`). Remaining linter items are
+deliberate or low-severity:
+
+- `routing_embeddings` RLS-enabled-no-policy — **intentional**: server-side (service_role)
+  access only; no client should read routing internals.
+- `is_staff` callable by `authenticated` over RPC — **accepted**: RLS policies must be able to
+  evaluate it, and it only returns a staff boolean. `anon` execute is revoked.
+- `vector` / `pg_net` installed in `public` — **deferred** to scale-vision hardening:
+  relocating an in-use extension type post-hoc is risky.
+
 ## LGPD lifecycle
 
 - Sensitive columns enumerated in [`04-data-model.md`](04-data-model.md).

@@ -68,7 +68,7 @@ the UI timeline, consumed via Realtime.
 
 ## Queues (pgmq)
 
-`task_jobs`, `skill_jobs`, `validate_jobs` — created in `0010_queue_and_triggers.sql`. Each
+`task_jobs`, `skill_jobs`, `validate_jobs` — created in `0011_queue_and_triggers.sql`. Each
 holds `{ task_id }` (+ stage metadata). Consumed and archived by the corresponding function.
 
 ## LGPD-sensitive columns
