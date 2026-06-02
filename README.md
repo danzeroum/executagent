@@ -62,3 +62,18 @@ pnpm dev:studio   # Vite dev server for the Studio UI
 Copy `.env.example` to `.env` and fill in Supabase + provider keys. Secrets are never
 committed. DB schema and Edge Functions are managed via Supabase migrations under
 `supabase/`.
+
+## Deploy (Docker on a VPS)
+
+The Studio ships as a runtime-configurable nginx container that sits behind your existing
+reverse proxy (Traefik) and talks to the managed Supabase backend:
+
+```bash
+cp .env.docker.example .env     # SUPABASE_URL, SUPABASE_ANON_KEY, STUDIO_HOST
+docker network create proxy     # if your proxy network doesn't exist yet
+docker compose up -d --build
+```
+
+Only port 80 is exposed on the shared `proxy` network (no host ports), so it coexists with
+other projects. Full details — including the nginx-proxy variant — in
+[`docs/07-deploy-docker.md`](docs/07-deploy-docker.md).
