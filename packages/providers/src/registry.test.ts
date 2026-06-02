@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { resolveProvider, configFromEnv, TIER_TEXT_MODEL } from "./registry.ts";
 import { MockProvider } from "./mockProvider.ts";
 import { ClaudeTextProvider } from "./claudeTextProvider.ts";
+import { DeepSeekTextProvider } from "./deepseekTextProvider.ts";
 
 describe("registry", () => {
   it("maps text tiers to distinct Claude models S<M<L", () => {
@@ -28,5 +29,14 @@ describe("registry", () => {
     const cfg = configFromEnv({ ANTHROPIC_API_KEY: "k", PROVIDER_FORCE_MOCK: "true" });
     expect(cfg.anthropicApiKey).toBe("k");
     expect(cfg.forceMock).toBe(true);
+  });
+
+  it("uses DeepSeek when only deepseekApiKey is configured", () => {
+    expect(resolveProvider("text", { deepseekApiKey: "sk-test" })).toBeInstanceOf(DeepSeekTextProvider);
+  });
+
+  it("reads DEEPSEEK_API_KEY from env bag", () => {
+    const cfg = configFromEnv({ DEEPSEEK_API_KEY: "sk-ds-test" });
+    expect(cfg.deepseekApiKey).toBe("sk-ds-test");
   });
 });
