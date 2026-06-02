@@ -1,0 +1,6 @@
+# Supabase project config for Executagent.
+# Hosted project ref (not a secret — the anon/service keys are; those live in .env / Vault).
+project_id = "hndickzjeliithqpawth"
+
+[db]
+major_version = 17

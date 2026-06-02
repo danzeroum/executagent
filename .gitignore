@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# env & secrets — NEVER commit
+.env
+.env.*
+!.env.example
+supabase/.env
+supabase/.env.*
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# logs / coverage / os
+*.log
+coverage/
+.DS_Store
+.vscode/
+.idea/

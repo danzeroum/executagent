@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: Executagent API
+  version: 0.1.0
+  description: >
+    Action endpoints (Edge Functions). Reads of tasks/artifacts/task_events/skills are served
+    by Supabase PostgREST + Realtime under Row-Level Security and are not redefined here.
+servers:
+  - url: https://YOUR-PROJECT.functions.supabase.co
+    description: Edge Functions base
+security:
+  - BearerAuth: []
+paths:
+  /create-task:
+    post:
+      operationId: createTask
+      summary: Create a task (async). Returns immediately; progress streams over Realtime.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCreate"
+      responses:
+        "202":
+          description: Accepted; processing started asynchronously.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskAccepted"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "429":
+          $ref: "#/components/responses/Error"
+  /health:
+    get:
+      operationId: health
+      summary: Liveness/readiness — DB, queue depth, provider reachability.
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [ok, degraded] }
+                  db: { type: boolean }
+                  queue_depth: { type: integer }
+                  providers:
+                    type: object
+                    additionalProperties: { type: boolean }
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    TaskCreate:
+      type: object
+      required: [prompt]
+      properties:
+        prompt: { type: string, minLength: 10, maxLength: 8000 }
+        skill_slug: { type: string, description: "Optional; router decides if omitted." }
+        tier: { type: string, enum: [S, M, L], default: M }
+        preferences:
+          type: object
+          properties:
+            template: { type: string, enum: [identidade, ui, poster, icones] }
+            style: { type: array, items: { type: string } }
+            mood: { type: array, items: { type: string } }
+            parent_artifact_id: { type: string, format: uuid, description: "Set when refining." }
+            pins:
+              type: array
+              items:
+                type: object
+                properties:
+                  x: { type: number }
+                  y: { type: number }
+                  note: { type: string }
+    TaskAccepted:
+      type: object
+      properties:
+        task_id: { type: string, format: uuid }
+        status: { type: string, enum: [queued] }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+            request_id: { type: string }
+  responses:
+    Error:
+      description: Error envelope
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

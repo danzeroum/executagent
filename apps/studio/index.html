@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark" data-mode="simples">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executagent Studio</title>
+<link rel="stylesheet" href="/src/styles/studio.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== TOPBAR ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__mark" aria-hidden="true"></div>
+      <div class="brand__name">Execut<b>agent</b></div>
+      <div class="brand__tag">Studio</div>
+    </div>
+
+    <div class="topbar__center">
+      <nav class="crumbs" aria-label="Localização">
+        <span>Workspace</span>
+        <span class="sep">/</span>
+        <span class="proj">marca-fintech-2026</span>
+        <span class="sep">/</span>
+        <span class="cur">Geração de identidade</span>
+      </nav>
+    </div>
+
+    <div class="topbar__right">
+      <div class="modes" role="group" aria-label="Modo de visualização">
+        <button data-mode-btn="simples" aria-pressed="true">Simples</button>
+        <button data-mode-btn="tecnico" aria-pressed="false">Técnico</button>
+        <button data-mode-btn="criativo" aria-pressed="false">Criativo</button>
+      </div>
+
+      <button class="iconbtn" id="principlesBtn" aria-pressed="false" title="Mostrar princípios de design">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+      </button>
+
+      <button class="iconbtn" id="themeBtn" aria-pressed="false" title="Alternar tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A8 8 0 1 1 11.2 3a6 6 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+
+      <div class="avatar"><span>EA</span></div>
+    </div>
+  </header>
+
+  <!-- ===================== WORKSPACE ===================== -->
+  <div class="workspace">
+
+    <!-- ---------- COLUMN 1 — EXPLORAR ---------- -->
+    <section class="col" id="col-explore" aria-label="Explorar entradas">
+      <div class="col__head">
+        <div class="col__title">
+          <span class="idx">01</span>
+          <h2>Explorar</h2>
+        </div>
+        <span class="label">Entradas</span>
+      </div>
+
+      <div class="col__body">
+
+        <!-- composer -->
+        <div class="section">
+          <div class="section__label">
+            <span class="label">Briefing</span>
+            <span class="label" id="promptCount">0 / 480</span>
+          </div>
+          <div class="composer">
+            <textarea id="prompt" maxlength="480" placeholder="Descreva o que você quer criar — ou escolha um template abaixo e deixe o agente sugerir o resto…"></textarea>
+            <div class="composer__foot">
+              <div class="tier">
+                <span class="label">Tier</span>
+                <div class="tier__pills" role="group" aria-label="Tier do modelo">
+                  <button data-tier="S" aria-pressed="false">S</button>
+                  <button data-tier="M" aria-pressed="true">M</button>
+                  <button data-tier="L" aria-pressed="false">L</button>
+                </div>
+              </div>
+              <button class="chip chip--ghost" id="surpriseBtn" title="Sugestão inesperada do agente">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3 1.9 4.6L19 9l-4 3.4L16 18l-4-2.6L8 18l1-5.6L5 9l5.1-1.4Z"/></svg>
+                Surpreenda-me
+              </button>
+            </div>
+          </div>
+          <button class="btn btn--accent btn--block" id="generateBtn" style="margin-top:var(--s3)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            Gerar 4 variações
+          </button>
+        </div>
+
+        <!-- templates -->
+        <div class="section">
+          <div class="section__label">
+            <span class="label">Templates</span>
+            <span class="label">descobrir →</span>
+          </div>
+          <div class="templates" id="templates">
+            <button class="tmpl" data-tmpl="identidade" aria-pressed="false">
+              <svg class="tmpl__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="5"/><path d="M14 14l6 6"/></svg>
+              <span class="tmpl__name">Identidade visual</span>
+              <span class="tmpl__meta">logo · paleta · tipo</span>
+            </button>
+            <button class="tmpl" data-tmpl="ui" aria-pressed="false">
+              <svg class="tmpl__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M8 4v5"/></svg>
+              <span class="tmpl__name">Mockup de UI</span>
+              <span class="tmpl__meta">app · web · tela</span>
+            </button>
+            <button class="tmpl" data-tmpl="poster" aria-pressed="false">
+              <svg class="tmpl__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
+              <span class="tmpl__name">Pôster editorial</span>
+              <span class="tmpl__meta">print · capa</span>
+            </button>
+            <button class="tmpl" data-tmpl="icones" aria-pressed="false">
+              <svg class="tmpl__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><circle cx="17" cy="17" r="3"/></svg>
+              <span class="tmpl__name">Ícones SVG</span>
+              <span class="tmpl__meta">set · linha</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- style suggestions -->
+        <div class="section">
+          <div class="section__label">
+            <span class="label">Estilo</span>
+            <span class="label" id="styleHint">selecione um template</span>
+          </div>
+          <div class="chips" id="styles"></div>
+        </div>
+
+        <!-- mood -->
+        <div class="section">
+          <div class="section__label">
+            <span class="label">Mood</span>
+          </div>
+          <div class="chips" id="moods">
+            <button class="chip" aria-pressed="false"><span class="dot"></span>Confiável</button>
+            <button class="chip" aria-pressed="false"><span class="dot"></span>Sofisticado</button>
+            <button class="chip" aria-pressed="false"><span class="dot"></span>Ousado</button>
+            <button class="chip" aria-pressed="false"><span class="dot"></span>Acolhedor</button>
+            <button class="chip" aria-pressed="false"><span class="dot"></span>Técnico</button>
+          </div>
+        </div>
+
+        <!-- contextual suggestion -->
+        <div class="section">
+          <div class="suggest" id="suggest" hidden>
+            <svg class="spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3 1.9 4.6L19 9l-4 3.4L16 18l-4-2.6L8 18l1-5.6L5 9l5.1-1.4Z"/></svg>
+            <div class="suggest__body">
+              <p id="suggestText"></p>
+              <button class="chip" id="suggestApply"><span class="dot"></span>Aplicar sugestão</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---------- COLUMN 2 — DESCOBRIR ---------- -->
+    <section class="col" id="col-discover" aria-label="Descobrir saídas">
+      <div class="col__head">
+        <div class="col__title">
+          <span class="idx">02</span>
+          <h2>Descobrir</h2>
+        </div>
+        <div class="discover-head-inline" style="display:flex;align-items:center;gap:var(--s3)">
+          <span class="label" id="discoverMeta">aguardando geração</span>
+        </div>
+      </div>
+
+      <!-- empty state -->
+      <div class="col__body" id="discoverBody">
+        <div class="discover-empty" id="discoverEmpty">
+          <div class="discover-empty__inner">
+            <div class="discover-empty__art"><span class="label">saídas aparecem aqui</span></div>
+            <h3>Gere para descobrir</h3>
+            <p>O agente devolve várias direções de uma vez — compare, entenda e escolha. Você não recebe um único output, recebe um espaço de possibilidades.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- COLUMN 3 — DIÁLOGO ---------- -->
+    <section class="col" id="col-dialogue" aria-label="Diálogo de feedback">
+      <div class="col__head">
+        <div class="col__title">
+          <span class="idx">03</span>
+          <h2>Diálogo</h2>
+        </div>
+        <span class="label">Feedback</span>
+      </div>
+
+      <div class="col__body" id="dialogueBody" style="display:flex;flex-direction:column;padding:0">
+        <div class="dialogue-empty" id="dialogueEmpty">
+          <span class="label">Nenhum artefato em foco</span>
+          Selecione uma variação na coluna <b>Descobrir</b> para abrir o diálogo visual: marque pontos diretamente sobre o artefato, peça ajustes e veja a resposta na hora.
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ===================== PRINCIPLES OVERLAY ===================== -->
+<div class="principles" id="principles" aria-hidden="true">
+  <div class="principles__head">
+    <div class="label">Infraestrutura cognitiva</div>
+    <h2>Três princípios, uma tela</h2>
+  </div>
+
+  <div class="pmark" data-anchor="col-explore" style="--ox:0px">
+    <div class="pmark__tag">
+      <span class="pmark__n">01</span>
+      <div class="pmark__t">
+        <h4>Entradas como Exploração</h4>
+        <p>Templates, sugestões de estilo e “surpreenda-me” revelam opções que o usuário talvez não soubesse pedir.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pmark" data-anchor="col-discover">
+    <div class="pmark__tag">
+      <span class="pmark__n">02</span>
+      <div class="pmark__t">
+        <h4>Saídas como Descoberta</h4>
+        <p>Várias direções lado a lado com qualidade visível — comparar e escolher, não apenas aceitar.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pmark" data-anchor="col-dialogue">
+    <div class="pmark__tag">
+      <span class="pmark__n">03</span>
+      <div class="pmark__t">
+        <h4>Feedback como Diálogo Visual</h4>
+        <p>Marcar, anotar e refinar direto sobre o artefato — com resposta visual imediata e contextual.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/studio.js"></script>
+</body>
+</html>
